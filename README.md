@@ -1,17 +1,23 @@
-Use the tool available at https://javl.github.io/image2cpp/ to generate hex from a 32x128 image.
+# My Custom Keymap for the Corne Keyboard
 
-For an example of rendering an animation to an OLED screen, see the code below:
+This is my keymap for the Corne keyboard. It includes code for OLED displays, where the left display shows keyboard status (layer, caps lock and WPM) and the right display has a matrix digital rain effect.
+
+## Frame Animation Example
+
+For an example of rendering an animation consisting of a series of frames to an OLED screen, see the code below. This is in place of the matrix digital rain animation code. Use this if you want to have an animation made up from a series of frames instead of randomly generated matrix digital rain.
+
+Note: Each frame is an array of hex values generated using the tool available at https://javl.github.io/image2cpp/ to generate hex from a 32x128 image.
 
 ``` C
 
 // Animation parameters
-#define TERRARIA_ANIM_FRAME_DURATION 400 // frame duration in ms
+#define ANIM_FRAME_DURATION 400 // frame duration in ms
 
 // Animation variables
-uint32_t terraria_anim_timer = 0;
-uint8_t terraria_current_frame = 0;
+uint32_t anim_timer = 0;
+uint8_t current_frame = 0;
 
-static void render_terraria_animation(void) {
+static void render_animation(void) {
 
     static const char PROGMEM frame1[] = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0xc0, 0xe0, 0xb0, 0x78, 0xf8, 0x7c, 0x1c, 0x1c, 0x1c, 0x0c, 0x0c,
@@ -58,15 +64,15 @@ static void render_terraria_animation(void) {
     uint16_t num_frames = sizeof(all_frames) / sizeof(all_frames[0]);
 
     // Run animation
-    if (timer_elapsed32(terraria_anim_timer) > TERRARIA_ANIM_FRAME_DURATION) {
+    if (timer_elapsed32(anim_timer) > ANIM_FRAME_DURATION) {
         // Set timer to updated time
-        terraria_anim_timer = timer_read32();
+        anim_timer = timer_read32();
 
         // Increment frame
-        terraria_current_frame = (terraria_current_frame + 1) % num_frames;
+        current_frame = (current_frame + 1) % num_frames;
 
         // Draw frame
-        oled_write_raw_P(all_frames[terraria_current_frame], frame_sizes[terraria_current_frame]);
+        oled_write_raw_P(all_frames[current_frame], frame_sizes[current_frame]);
     }
 
     /* Note:
