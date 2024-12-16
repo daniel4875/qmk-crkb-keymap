@@ -28,6 +28,7 @@ uint32_t matrix_anim_timer = 0;
 // Matrix variables
 uint8_t next_bottom_of_col[5] = {0};
 uint8_t top_of_col[5] = {0};
+uint8_t min_chain_length = 5;
 
 static uint8_t generate_random_number(uint8_t max_num) {
     // Generate next value in sequence to use as pseudo-random number
@@ -46,6 +47,8 @@ static char generate_random_char(void) {
     return matrix_chars[generate_random_number(strlen(matrix_chars))];
 }
 
+// Check if any column of OLED doesn't contain any falling chars
+// Note: OLED can fit 5 chars across width, so we have 5 columns
 static bool col_without_chars_exists(void) {
     bool exists = false;
     for (uint8_t col = 0; col < 5; col++) {
@@ -56,10 +59,13 @@ static bool col_without_chars_exists(void) {
     return exists;
 }
 
+// Check if any column of OLED contains more than 5 chars and doesn't have
+// any space at the top of the column
+// Note: OLED can fit 5 chars across width, so we have 5 columns
 static bool col_with_chars_without_spaces_at_top_exists(void) {
     bool exists = false;
     for (uint8_t col = 0; col < 5; col++) {
-        if ((next_bottom_of_col[col] > 0) && (top_of_col[col] == 0)) {
+        if ((next_bottom_of_col[col] >= min_chain_length) && (top_of_col[col] == 0)) {
             exists = true;
         }
     }
@@ -81,11 +87,14 @@ static uint8_t choose_random_col_without_chars(void) {
     return available_cols[rand_num];
 }
 
+// Choose random column of OLED that contains more than 5 chars and doesn't
+// have any space at the top of the column
+// Note: OLED can fit 5 chars across width, so we have 5 columns
 static uint8_t choose_random_col_with_chars_without_spaces_at_top(void) {
     uint8_t available_cols[5] = {0};
     uint8_t num_cols_available = 0;
     for (uint8_t col = 0; col < 5; col++) {
-        if ((next_bottom_of_col[col] > 0) && (top_of_col[col] == 0)) {
+        if ((next_bottom_of_col[col] >= min_chain_length) && (top_of_col[col] == 0)) {
             available_cols[num_cols_available] = col;
             num_cols_available++;
         }
@@ -128,13 +137,13 @@ static void render_matrix_digital_rain_frame(void) {
         next_bottom_of_col[col] = 1;
     }
 
-    // Remove char (replace with space) from top of random column that already has chars in it and that hasn't had
-    // any chars removed (not every frame, only a chance per frame)
+    // Remove char (replace with space) from top of random column that has certain minimum number of chars
+    // in it and that hasn't had any chars removed (not every frame, only a chance per frame)
     bool should_remove_char = generate_random_number(100) <= MATRIX_REMOVE_CHAR_PERCENT;
     if (should_remove_char && col_with_chars_without_spaces_at_top_exists()) {
         uint8_t col = choose_random_col_with_chars_without_spaces_at_top();
         oled_set_cursor(col, 0);
-        oled_write_char(' ', false);
+        oled_write_char(' ', false); 
         top_of_col[col] = 1;
     }
 
