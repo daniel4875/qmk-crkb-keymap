@@ -2,6 +2,26 @@
 
 This is my keymap for the Corne keyboard. It includes code for OLED displays, where the left display shows keyboard status (layer, caps lock and WPM) and the right display has a matrix digital rain effect.
 
+## Installing the Keymap
+
+Put all files in this repo under the directory `<keymap>` (with a keymap name of your choosing) inside the `keymaps` directory for the `crkbd` keyboard.
+
+## Compiling the Firmware
+
+To compile the firmware (substitute `<keymap>` with the name you gave the keymap):
+
+```
+qmk compile -kb crkbd -km <keymap>
+```
+
+## Flashing the Firmware
+
+To flash the firmware to the keyboard (run this command once for each half of the keyboard) (substitute `<keymap>` with the name you gave the keymap):
+
+```
+qmk flash -kb crkbd -km <keymap>
+```
+
 ## Frame Animation Example
 
 For an example of rendering an animation consisting of a series of frames to an OLED screen, see the code below. This is in place of the matrix digital rain animation code. Use this if you want to have an animation made up from a series of frames instead of randomly generated matrix digital rain.
