@@ -226,13 +226,27 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 
 // Draw to OLED
 bool oled_task_user(void) {
-    // Draw to left OLED
-    if (is_keyboard_master()) {
-        render_status();
-    // Draw to right OLED
-    } else {
-        render_matrix_digital_rain();
+    // If OLED is off but last input time is less than timeout, turn OLED on
+    if (!is_oled_on() && last_input_activity_elapsed() < OLED_TIMEOUT) {
+        oled_on();
     }
+    
+    // If OLED is on but last input time is more than timeout, turn OLED off
+    if (is_oled_on() && last_input_activity_elapsed() >= OLED_TIMEOUT) {
+        oled_off();
+    }
+    
+    // If OLED is on then draw to it
+    if (is_oled_on()) {
+        // Draw to left OLED
+        if (is_keyboard_master()) {
+            render_status();
+        // Draw to right OLED
+        } else {
+            render_matrix_digital_rain();
+        }
+    }
+    
     return false;
 }
 
