@@ -11,8 +11,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Animation parameters
 #define MATRIX_ANIM_FRAME_DURATION 10 // frame duration in ms
-#define MATRIX_SPAWN_CHAR_PERCENT 60 // percentage chance of a new character spawning in an empty column in a given frame
-#define MATRIX_REMOVE_CHAR_PERCENT 20 // percentage chance of a character being removed from top of column in a given frame
+#define MATRIX_SPAWN_CHAIN_PERCENT 40 // percentage chance of a new character chain spawning in an empty column in a given frame
 
 // RNG parameters
 #define RAND_ADD 53
@@ -28,8 +27,9 @@ uint32_t matrix_anim_timer = 0;
 // Matrix variables
 uint8_t next_bottom_of_col[5] = {0};
 uint8_t top_of_col[5] = {0};
+uint8_t col_remaining_chain_length[5] = {0};
 uint8_t min_chain_length = 5;
-uint8_t max_chain_length = 16;
+uint8_t max_chain_length = 16; // Note: OLED can fit 16 chars along height, so max chain length greater than 16 is out of range of screen (0 to 15)
 
 static uint8_t generate_random_number(uint8_t max_num) {
     // Generate next value in sequence to use as pseudo-random number
@@ -60,19 +60,6 @@ static bool col_without_chars_exists(void) {
     return exists;
 }
 
-// Check if any column of OLED contains more than 5 chars and doesn't have
-// any space at the top of the column
-// Note: OLED can fit 5 chars across width, so we have 5 columns
-static bool col_with_chars_without_spaces_at_top_exists(void) {
-    bool exists = false;
-    for (uint8_t col = 0; col < 5; col++) {
-        if ((next_bottom_of_col[col] >= min_chain_length) && (top_of_col[col] == 0)) {
-            exists = true;
-        }
-    }
-    return exists;
-}
-
 // Choose random column of OLED that doesn't contain any falling chars
 // Note: OLED can fit 5 chars across width, so we have 5 columns
 static uint8_t choose_random_col_without_chars(void) {
@@ -88,74 +75,45 @@ static uint8_t choose_random_col_without_chars(void) {
     return available_cols[rand_num];
 }
 
-// Choose random column of OLED that contains more than 5 chars and doesn't
-// have any space at the top of the column
-// Note: OLED can fit 5 chars across width, so we have 5 columns
-static uint8_t choose_random_col_with_chars_without_spaces_at_top(void) {
-    uint8_t available_cols[5] = {0};
-    uint8_t num_cols_available = 0;
-    for (uint8_t col = 0; col < 5; col++) {
-        if ((next_bottom_of_col[col] >= min_chain_length) && (top_of_col[col] == 0)) {
-            available_cols[num_cols_available] = col;
-            num_cols_available++;
-        }
-    }
-    uint8_t rand_num = generate_random_number(num_cols_available);
-    return available_cols[rand_num];
-}
-
 // Render next frame of matrix digital rain animation
 static void render_matrix_digital_rain_frame(void) {
-    // Add new char to all columns that already have chars in it and that still have space to add chars to bottom
-    // Note: OLED can fit 16 chars along height, so if next bottom of col is 16, it is out of range of screen (0 to 15)
-    for (uint8_t col = 0; col < 5; col++) {
-        uint8_t next_char_pos = next_bottom_of_col[col];
-        if ((next_char_pos > 0) && (next_char_pos < 16)) {
-            char new_char = generate_random_char();
-            oled_set_cursor(col, next_char_pos);
-            oled_write_char(new_char, false);
-            next_bottom_of_col[col]++;
-        }
+    // Add new char chain to random column that hasn't already got chars in it (not every frame, only a chance per frame)
+    bool should_add_new_char = generate_random_number(100) <= MATRIX_SPAWN_CHAIN_PERCENT;
+    if (should_add_new_char && col_without_chars_exists()) {
+        // Choose random chain length
+        uint8_t chain_length_range = max_chain_length - min_chain_length + 1;
+        uint8_t chain_length = min_chain_length + generate_random_number(chain_length_range);
+        // Choose random column
+        uint8_t col = choose_random_col_without_chars();
+        // Store chain length for column
+        col_remaining_chain_length[col] = chain_length;
     }
-
-    // Remove top char (replace top char with space) for all columns that have chars in them and already have some chars replaced with space
+    
+    // Remove top char (replace top char with space) for all columns that have reached their chain length
+    // (and actually have chars in it)
     for (uint8_t col = 0; col < 5; col++) {
         uint8_t next_space_pos = top_of_col[col];
-        if (next_space_pos > 0) {
+        uint8_t chain_length_remaining = col_remaining_chain_length[col];
+        if ((chain_length_remaining == 0) && (next_bottom_of_col[col] > 0)) {
             oled_set_cursor(col, next_space_pos);
-            oled_write_char(' ', false); 
+            oled_write_char(' ', false);
             top_of_col[col]++;
         }
     }
     
-    // Remove top char (replace top char with space) for all columns that have a certain maximum number of chars in it
-    // and haven't had any chars removed
+    // Add new char to all columns that haven't reached their chain length yet, or already contain chars and haven't reached the bottom of the screen
+    // Note: OLED can fit 16 chars along height, so if next bottom of col is 16, it is out of range of screen (0 to 15)
     for (uint8_t col = 0; col < 5; col++) {
-        if ((next_bottom_of_col[col] >= max_chain_length) && (top_of_col[col] == 0)) {
-            oled_set_cursor(col, 0);
-            oled_write_char(' ', false);
-            top_of_col[col] = 1;
+        uint8_t next_char_pos = next_bottom_of_col[col];
+        uint8_t chain_length_remaining = col_remaining_chain_length[col];
+        if ((chain_length_remaining > 0) || ((next_char_pos > 0) && (next_char_pos < 16))) {
+            char new_char = generate_random_char();
+            oled_set_cursor(col, next_char_pos);
+            oled_write_char(new_char, false);
+            next_bottom_of_col[col]++;
+            if (chain_length_remaining > 0)
+                col_remaining_chain_length[col]--;
         }
-    }
-
-    // Add new char to random column that hasn't already got chars in it (not every frame, only a chance per frame)
-    bool should_add_new_char = generate_random_number(100) <= MATRIX_SPAWN_CHAR_PERCENT;
-    if (should_add_new_char && col_without_chars_exists()) {
-        char new_char = generate_random_char();
-        uint8_t col = choose_random_col_without_chars();
-        oled_set_cursor(col, 0);
-        oled_write_char(new_char, false);
-        next_bottom_of_col[col] = 1;
-    }
-
-    // Remove char (replace with space) from top of random column that has certain minimum number of chars
-    // in it and that hasn't had any chars removed (not every frame, only a chance per frame)
-    bool should_remove_char = generate_random_number(100) <= MATRIX_REMOVE_CHAR_PERCENT;
-    if (should_remove_char && col_with_chars_without_spaces_at_top_exists()) {
-        uint8_t col = choose_random_col_with_chars_without_spaces_at_top();
-        oled_set_cursor(col, 0);
-        oled_write_char(' ', false);
-        top_of_col[col] = 1;
     }
 
     // Reset columns that have had all chars removed (replaced with spaces)
@@ -250,7 +208,7 @@ bool oled_task_user(void) {
     // If OLED is on then draw to it
     if (is_oled_on()) {
         // Draw to left OLED
-        if (is_keyboard_master()) {
+        if (!is_keyboard_master()) { // DELETE EXCLAMATION MARK!!!
             render_status();
         // Draw to right OLED
         } else {
