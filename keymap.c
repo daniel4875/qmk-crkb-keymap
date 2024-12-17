@@ -29,6 +29,7 @@ uint32_t matrix_anim_timer = 0;
 uint8_t next_bottom_of_col[5] = {0};
 uint8_t top_of_col[5] = {0};
 uint8_t min_chain_length = 5;
+uint8_t max_chain_length = 16;
 
 static uint8_t generate_random_number(uint8_t max_num) {
     // Generate next value in sequence to use as pseudo-random number
@@ -126,6 +127,16 @@ static void render_matrix_digital_rain_frame(void) {
             top_of_col[col]++;
         }
     }
+    
+    // Remove top char (replace top char with space) for all columns that have a certain maximum number of chars in it
+    // and haven't had any chars removed
+    for (uint8_t col = 0; col < 5; col++) {
+        if ((next_bottom_of_col[col] >= max_chain_length) && (top_of_col[col] == 0)) {
+            oled_set_cursor(col, 0);
+            oled_write_char(' ', false);
+            top_of_col[col] = 1;
+        }
+    }
 
     // Add new char to random column that hasn't already got chars in it (not every frame, only a chance per frame)
     bool should_add_new_char = generate_random_number(100) <= MATRIX_SPAWN_CHAR_PERCENT;
@@ -143,7 +154,7 @@ static void render_matrix_digital_rain_frame(void) {
     if (should_remove_char && col_with_chars_without_spaces_at_top_exists()) {
         uint8_t col = choose_random_col_with_chars_without_spaces_at_top();
         oled_set_cursor(col, 0);
-        oled_write_char(' ', false); 
+        oled_write_char(' ', false);
         top_of_col[col] = 1;
     }
 
