@@ -11,7 +11,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Animation parameters
 #define MATRIX_ANIM_FRAME_DURATION 10 // frame duration in ms
-#define MATRIX_SPAWN_CHAR_PERCENT 60 // percentage chance of a new character spawning in a given frame
+#define MATRIX_SPAWN_CHAR_PERCENT 60 // percentage chance of a new character spawning in an empty column in a given frame
 #define MATRIX_REMOVE_CHAR_PERCENT 20 // percentage chance of a character being removed from top of column in a given frame
 
 // RNG parameters
@@ -123,7 +123,7 @@ static void render_matrix_digital_rain_frame(void) {
         uint8_t next_space_pos = top_of_col[col];
         if (next_space_pos > 0) {
             oled_set_cursor(col, next_space_pos);
-            oled_write_char(' ', false);
+            oled_write_char(' ', false); 
             top_of_col[col]++;
         }
     }
