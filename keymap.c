@@ -11,7 +11,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 // Animation parameters
 #define MATRIX_ANIM_FRAME_DURATION 10 // frame duration in ms
-#define MATRIX_SPAWN_CHAIN_PERCENT 40 // percentage chance of a new character chain spawning in an empty column in a given frame
+#define MATRIX_SPAWN_CHAIN_PERCENT 20 // percentage chance of a new character chain spawning in an empty column in a given frame
 
 // RNG parameters
 #define RAND_ADD 53
@@ -60,6 +60,18 @@ static bool col_without_chars_exists(void) {
     return exists;
 }
 
+// Check if the top char is a space for all columns of OLED
+// Note: OLED can fit 5 chars across width, so we have 5 columns
+static bool all_cols_have_space_at_top(void) {
+    bool all_have_space_at_top = true;
+    for (uint8_t col = 0; col < 5; col++) {
+        if ((top_of_col[col] == 0) && (next_bottom_of_col[col] != 0)) {
+            all_have_space_at_top = false;
+        }
+    }
+    return all_have_space_at_top;
+}
+
 // Choose random column of OLED that doesn't contain any falling chars
 // Note: OLED can fit 5 chars across width, so we have 5 columns
 static uint8_t choose_random_col_without_chars(void) {
@@ -78,7 +90,8 @@ static uint8_t choose_random_col_without_chars(void) {
 // Render next frame of matrix digital rain animation
 static void render_matrix_digital_rain_frame(void) {
     // Add new char chain to random column that hasn't already got chars in it (not every frame, only a chance per frame)
-    bool should_add_new_char = generate_random_number(100) <= MATRIX_SPAWN_CHAIN_PERCENT;
+    bool should_add_new_char = (generate_random_number(100) + 1) <= MATRIX_SPAWN_CHAIN_PERCENT;
+    if (all_cols_have_space_at_top()) should_add_new_char = true; // Ensure new char chain is created if all cols have space at top (to prevent big gaps in rain)
     if (should_add_new_char && col_without_chars_exists()) {
         // Choose random chain length
         uint8_t chain_length_range = max_chain_length - min_chain_length + 1;
