@@ -22,6 +22,21 @@ To flash the firmware to the keyboard (run this command once for each half of th
 qmk flash -kb crkbd -km <keymap>
 ```
 
+## Modifying the Keymap
+
+1. Generate a JSON version of the keymap (substitute `<keymap>` with the name you gave the keymap):
+```
+qmk c2json -kb crkbd -km <keymap> -o layout.json
+```
+2. Upload the `layout.json` file to https://config.qmk.fm/ and edit the layout using the online editor.
+3. Download the keymap as a JSON file and replace `layout.json` with it.
+4. Generate a C code version of the keymap:
+```
+qmk json2c -o layout.c layout.json
+```
+5. Overwrite the keymap portion of the code at the top of the `keymap.c` file with the contents of `layout.c`.
+6. Delete `layout.c` and `layout.json`.
+
 ## Frame Animation Example
 
 For an example of rendering an animation consisting of a series of frames to an OLED screen, see the code below. This is in place of the matrix digital rain animation code. Use this if you want to have an animation made up from a series of frames instead of randomly generated matrix digital rain.
