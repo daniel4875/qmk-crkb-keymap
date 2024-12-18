@@ -34,7 +34,7 @@ qmk c2json -kb crkbd -km <keymap> -o layout.json
 ```
 qmk json2c -o layout.c layout.json
 ```
-5. Overwrite the keymap portion of the code at the top of the `keymap.c` file with the contents of `layout.c`.
+5. Overwrite the `keymaps` array in `keymap.c` with the `keymaps` array in `layout.c`.
 6. Delete `layout.c` and `layout.json`.
 
 ## Frame Animation Example
