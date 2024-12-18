@@ -221,7 +221,7 @@ bool oled_task_user(void) {
     // If OLED is on then draw to it
     if (is_oled_on()) {
         // Draw to left OLED
-        if (!is_keyboard_master()) { // DELETE EXCLAMATION MARK!!!
+        if (is_keyboard_master()) {
             render_status();
         // Draw to right OLED
         } else {
