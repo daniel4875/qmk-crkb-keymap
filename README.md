@@ -25,7 +25,7 @@ The goal for the keymap is to be similar to a standard keyboard layout to make i
 
 ### Layer 4 - Numpad
 
-![image](https://github.com/user-attachments/assets/7f876bbf-4a04-4471-87e9-492b3049e2de)
+![image](https://github.com/user-attachments/assets/34472f62-b146-47b8-8a9a-810bac111080)
 
 
 ## Installing the Keymap
