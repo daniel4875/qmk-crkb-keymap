@@ -1,10 +1,37 @@
 # My Custom Keymap for the Corne Keyboard
 
-This is my keymap for the Corne keyboard. It includes code for OLED displays, where the left display shows keyboard status (layer, caps lock and WPM) and the right display has a matrix digital rain effect.
+This is my keymap for the Corne keyboard. It includes code for OLED displays, where the left display shows keyboard status (layer, caps lock and WPM) and the right display has a matrix digital rain effect. It also has a numpad layer than can be toggled on or off, which turns the right half of the keyboard into a numpad.
+
+The goal for the keymap is to be similar to a standard keyboard layout to make it easier to switch between the Corne and a standard keyboard. For example, on the numbers and symbols layer, the numbers are along the top row, and the symbols for these numbers are accessed by pressing shift like on a standard keyboard, instead of having the symbols be on separate keys like you would do if you were making the most optimal layout.
+
+
+## The Keymap
+
+### Layer 0 - Base
+
+![image](https://github.com/user-attachments/assets/0d16b587-c090-4156-89b6-c5f7c27be8bf)
+
+### Layer 1 - Numbers and Symbols
+
+![image](https://github.com/user-attachments/assets/1cd87cbb-f8a1-47f4-9b0d-2ed97925d2e7)
+
+### Layer 2 - Function and Navigation
+
+![image](https://github.com/user-attachments/assets/38d845e0-f267-44d1-932b-ec3105377fea)
+
+### Layer 3 - Media
+
+![image](https://github.com/user-attachments/assets/55ebcdbe-3a09-4d10-a244-f339c49c6e87)
+
+### Layer 4 - Numpad
+
+![image](https://github.com/user-attachments/assets/7f876bbf-4a04-4471-87e9-492b3049e2de)
+
 
 ## Installing the Keymap
 
 Put all files in this repo under the directory `<keymap>` (with a keymap name of your choosing) inside the `keymaps` directory for the `crkbd` keyboard.
+
 
 ## Compiling the Firmware
 
@@ -14,6 +41,7 @@ To compile the firmware (substitute `<keymap>` with the name you gave the keymap
 qmk compile -kb crkbd -km <keymap>
 ```
 
+
 ## Flashing the Firmware
 
 To flash the firmware to the keyboard (run this command once for each half of the keyboard) (substitute `<keymap>` with the name you gave the keymap):
@@ -21,6 +49,7 @@ To flash the firmware to the keyboard (run this command once for each half of th
 ```
 qmk flash -kb crkbd -km <keymap>
 ```
+
 
 ## Modifying the Keymap
 
@@ -36,6 +65,7 @@ qmk json2c -o layout.c layout.json
 ```
 5. Overwrite the `keymaps` array in `keymap.c` with the `keymaps` array in `layout.c`.
 6. Delete `layout.c` and `layout.json`.
+
 
 ## Frame Animation Example
 
