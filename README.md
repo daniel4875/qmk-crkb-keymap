@@ -1,6 +1,6 @@
 # My Custom Keymap for the Corne Keyboard
 
-This is my keymap for the Corne keyboard. It includes code for OLED displays, where the left display shows keyboard status (layer, caps lock and WPM) and the right display has a matrix digital rain effect. It also has a numpad layer than can be toggled on or off, which turns the right half of the keyboard into a numpad.
+This is my keymap for the Corne keyboard. It also includes code for OLED displays, where the left display shows keyboard status (layer, caps lock and WPM) and the right display has a matrix digital rain animation. It also has a numpad layer than can be toggled on or off, which turns the right half of the keyboard into a numpad.
 
 The goal for the keymap is to be similar to a standard keyboard layout to make it easier to switch between the Corne and a standard keyboard. For example, on the numbers and symbols layer, the numbers are along the top row, and the symbols for these numbers are accessed by pressing shift like on a standard keyboard, instead of having the symbols be on separate keys like you would do if you were making the most optimal layout.
 
